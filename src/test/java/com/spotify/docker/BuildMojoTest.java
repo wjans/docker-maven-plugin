@@ -546,7 +546,7 @@ public class BuildMojoTest extends AbstractMojoTestCase {
     verify(docker).build(any(Path.class),
         anyString(),
         any(ProgressHandler.class),
-        eq(BuildParam.create("network", "mycustomnetwork")));
+        eq(BuildParam.create("networkmode", "mycustomnetwork")));
   }
 
   public void testBuildWithSkipDockerBuild() throws Exception {
