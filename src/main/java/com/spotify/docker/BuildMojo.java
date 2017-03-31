@@ -21,36 +21,6 @@
 
 package com.spotify.docker;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
-
-import com.spotify.docker.client.AnsiProgressHandler;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.exceptions.DockerException;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigException;
-import com.typesafe.config.ConfigFactory;
-import com.typesafe.config.ConfigValue;
-
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.model.Resource;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
-import org.codehaus.plexus.util.DirectoryScanner;
-import org.codehaus.plexus.util.FileUtils;
-import org.eclipse.jgit.api.errors.GitAPIException;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -68,6 +38,34 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
+import com.spotify.docker.client.AnsiProgressHandler;
+import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.exceptions.DockerException;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
+import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigValue;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Resource;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.PluginParameterExpressionEvaluator;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.FileUtils;
+import org.eclipse.jgit.api.errors.GitAPIException;
+
 import static com.google.common.base.CharMatcher.WHITESPACE;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.Lists.newArrayList;
@@ -80,6 +78,7 @@ import static com.spotify.docker.Utils.writeImageInfoFile;
 import static com.typesafe.config.ConfigRenderOptions.concise;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
+import static org.codehaus.plexus.util.StringUtils.isBlank;
 
 /**
  * Used to build docker images.
@@ -131,6 +130,10 @@ public class BuildMojo extends AbstractDockerMojo {
   /** Set to false to pass the `--rm` flag to the Docker daemon when building an image. */
   @Parameter(property = "rm", defaultValue = "true")
   private boolean rm;
+
+  /** Sets the `--network` option to pass to the Docker daemon when building an image. */
+  @Parameter(property = "network")
+  private String network;
 
   /** File path to save image as a tar archive after it is built. */
   @Parameter(property = "saveImageToTarArchive")
@@ -813,8 +816,11 @@ public class BuildMojo extends AbstractDockerMojo {
       buildParams.add(DockerClient.BuildParam.noCache());
     }
     if (!rm) {
-        buildParams.add(DockerClient.BuildParam.rm(false));
-      }
+      buildParams.add(DockerClient.BuildParam.rm(false));
+    }
+    if (!isBlank(network)) {
+      buildParams.add(DockerClient.BuildParam.create("network", network));
+    }
     if (!buildArgs.isEmpty()) {
       buildParams.add(DockerClient.BuildParam.create("buildargs", 
         URLEncoder.encode(OBJECT_MAPPER.writeValueAsString(buildArgs), "UTF-8")));

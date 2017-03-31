@@ -21,24 +21,6 @@
 
 package com.spotify.docker;
 
-import com.google.common.collect.ImmutableList;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spotify.docker.client.AnsiProgressHandler;
-import com.spotify.docker.client.DockerClient;
-import com.spotify.docker.client.DockerClient.BuildParam;
-import com.spotify.docker.client.ProgressHandler;
-import com.spotify.docker.client.messages.ProgressMessage;
-
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.apache.maven.project.MavenProject;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
@@ -53,17 +35,33 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import com.spotify.docker.client.AnsiProgressHandler;
+import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.DockerClient.BuildParam;
+import com.spotify.docker.client.ProgressHandler;
+import com.spotify.docker.client.messages.ProgressMessage;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.testing.AbstractMojoTestCase;
+import org.apache.maven.project.MavenProject;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import static com.spotify.docker.TestUtils.getPom;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.spy;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 
 public class BuildMojoTest extends AbstractMojoTestCase {
 
@@ -537,6 +535,18 @@ public class BuildMojoTest extends AbstractMojoTestCase {
         anyString(),
         any(ProgressHandler.class),
         eq(BuildParam.rm(false)));
+  }
+
+  public void testNetwork() throws Exception {
+    final BuildMojo mojo = setupMojo(getPom("/pom-build-network.xml"));
+    final DockerClient docker = mock(DockerClient.class);
+
+    mojo.execute(docker);
+
+    verify(docker).build(any(Path.class),
+        anyString(),
+        any(ProgressHandler.class),
+        eq(BuildParam.create("network", "mycustomnetwork")));
   }
 
   public void testBuildWithSkipDockerBuild() throws Exception {
