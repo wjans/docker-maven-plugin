@@ -819,7 +819,7 @@ public class BuildMojo extends AbstractDockerMojo {
       buildParams.add(DockerClient.BuildParam.rm(false));
     }
     if (!isBlank(network)) {
-      buildParams.add(DockerClient.BuildParam.create("network", network));
+      buildParams.add(DockerClient.BuildParam.create("networkmode", network));
     }
     if (!buildArgs.isEmpty()) {
       buildParams.add(DockerClient.BuildParam.create("buildargs", 
