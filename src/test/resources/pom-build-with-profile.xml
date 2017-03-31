@@ -18,7 +18,7 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>com.spotify</groupId>
+        <groupId>com.ixortalk</groupId>
         <artifactId>docker-maven-plugin</artifactId>
         <version>0.1-SNAPSHOT</version>
         <configuration>
