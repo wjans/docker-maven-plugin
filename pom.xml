@@ -39,8 +39,9 @@
 
   <distributionManagement>
     <snapshotRepository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <id>ixor</id>
+      <name>ixor-snapshots</name>
+      <url>http://repo.ixor.be/nexus/content/repositories/ixor-snapshots</url>
     </snapshotRepository>
   </distributionManagement>
 
